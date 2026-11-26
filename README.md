@@ -37,8 +37,9 @@ store/             FICHA.md (textos de las tiendas), iconos, imagen destacada y 
 
 ## Puesta en marcha (una sola vez)
 
-1. *Settings → Pages → Build and deployment → Source:* **GitHub Actions**.
-2. Cada cambio en `main` publica la web y compila las apps de Android e iPhone automáticamente.
+No hay que configurar nada: cada cambio en `main` publica la web (workflow **Probar y publicar la web**, que copia `public/` a la rama `gh-pages`) y compila las apps de Android e iPhone automáticamente.
+
+En *Settings → Pages* debe quedar «Implementar desde una rama» → `gh-pages` / `(root)` (se pone solo la primera vez). No lo cambies a «GitHub Actions».
 
 ## App de Android (sin Android Studio)
 
