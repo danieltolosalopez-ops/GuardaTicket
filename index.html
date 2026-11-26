@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Guarda el Ticket · Tus garantías bajo control</title>
+  <meta name="description" content="Haz una foto al ticket y te avisamos antes de que termine la garantía. Carta de reclamación lista para enviar. Sin registro: todo queda en tu móvil.">
+  <meta name="theme-color" content="#D8C29D">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="cabecera">
+    <h1 class="marca"><span class="marca-ticket" aria-hidden="true"></span>Guarda el Ticket</h1>
+  </header>
+
+  <main>
+    <!-- ============ TICKETS ============ -->
+    <section class="vista" id="vista-tickets" aria-labelledby="t-tickets">
+      <h2 id="t-tickets" class="titulo-vista">Tus tickets</h2>
+      <p class="resumen" id="resumen"></p>
+      <div class="filtros" role="group" aria-label="Filtrar">
+        <button type="button" class="filtro" data-filtro="todos" aria-pressed="true">Todos</button>
+        <button type="button" class="filtro" data-filtro="pronto" aria-pressed="false">Terminan pronto</button>
+        <button type="button" class="filtro" data-filtro="vigente" aria-pressed="false">En garantía</button>
+        <button type="button" class="filtro" data-filtro="caducada" aria-pressed="false">Caducados</button>
+      </div>
+      <input type="search" id="buscar" class="buscar" placeholder="Buscar por producto o tienda" aria-label="Buscar">
+      <ul class="tickets" id="tickets"></ul>
+    </section>
+
+    <!-- ============ RENOVACIONES ============ -->
+    <section class="vista" id="vista-renovaciones" hidden aria-labelledby="t-ren">
+      <h2 id="t-ren" class="titulo-vista">Renovaciones</h2>
+      <p class="nota">Seguros, suscripciones y contratos que se renuevan solos. Te avisamos antes para que compares o los des de baja a tiempo.</p>
+      <div id="renovaciones"></div>
+    </section>
+
+    <!-- ============ MÁS ============ -->
+    <section class="vista" id="vista-mas" hidden aria-labelledby="t-mas">
+      <h2 id="t-mas" class="titulo-vista">Copia y ajustes</h2>
+      <h3 class="subtitulo">Copia de seguridad</h3>
+      <p class="nota">Tus tickets solo están en este móvil. Descarga una copia de vez en cuando (incluye las fotos) y guárdala en tu correo o en la nube.</p>
+      <div class="acciones">
+        <button class="boton" type="button" id="btn-exportar">Descargar copia</button>
+        <label class="boton boton-claro">Recuperar una copia<input type="file" id="importar" accept="application/json,.json" hidden></label>
+      </div>
+      <p class="nota" id="ultima-copia"></p>
+
+      <h3 class="subtitulo">Avisos</h3>
+      <p class="nota" id="estado-avisos"></p>
+
+      <h3 class="subtitulo">Cómo calculamos la garantía</h3>
+      <ul class="explica">
+        <li>Productos nuevos comprados desde el 1 de enero de 2022: 3 años desde la entrega. Durante los 2 primeros, si falla, es la tienda la que tiene que demostrar que el defecto no venía de fábrica.</li>
+        <li>Productos de segunda mano comprados a una empresa: 3 años, o lo que pactéis por escrito, nunca menos de 1 año.</li>
+        <li>Apps, juegos y contenidos digitales de pago único: 2 años.</li>
+        <li>Compras anteriores a 2022: 2 años.</li>
+        <li>La garantía ampliada del fabricante se suma solo si dura más que la legal.</li>
+      </ul>
+      <p class="nota">Fuente: Ley General para la Defensa de los Consumidores y Usuarios (Real Decreto Legislativo 1/2007, reformado por el Real Decreto-ley 7/2021). Guarda el Ticket es orientativa y no es un servicio oficial.</p>
+      <p class="nota">Tus datos y fotos se guardan solo en este dispositivo. <a href="privacy.html">Política de privacidad</a>.</p>
+    </section>
+  </main>
+
+  <button class="fab" type="button" id="btn-nuevo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span id="fab-texto">Guardar ticket</span></button>
+
+  <nav class="pestañas" aria-label="Secciones">
+    <button type="button" data-vista="tickets" aria-current="page">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-2-1.5L14 21l-2-1.5L10 21l-2-1.5L6 21z"/><path d="M9 8h6M9 12h6"/></svg>Tickets</button>
+    <button type="button" data-vista="renovaciones">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 5v6h-6"/></svg>Renovaciones</button>
+    <button type="button" data-vista="mas">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>Copia</button>
+  </nav>
+
+  <!-- Nuevo / editar producto -->
+  <dialog id="dlg-producto" class="hoja">
+    <form method="dialog" id="form-producto" class="formulario">
+      <div class="hoja-cabecera">
+        <h3 id="titulo-producto">Guardar un ticket</h3>
+        <button class="icono" value="cancelar" formnovalidate aria-label="Cerrar"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+      </div>
+      <div class="fotos-form" id="fotos-form"></div>
+      <div class="acciones acciones-foto">
+        <label class="boton"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>Hacer foto<input type="file" accept="image/*" capture="environment" id="foto-camara" hidden></label>
+        <label class="boton boton-claro">Elegir de la galería<input type="file" accept="image/*" id="foto-galeria" multiple hidden></label>
+      </div>
+      <label class="campo"><span class="etiqueta">Qué compraste</span>
+        <input type="text" id="p-nombre" maxlength="80" required placeholder="Ej.: Lavadora Bosch Serie 6"></label>
+      <label class="campo"><span class="etiqueta">Dónde</span>
+        <input type="text" id="p-tienda" maxlength="60" placeholder="Ej.: Electro Pérez, Amazon…" list="tiendas"></label>
+      <datalist id="tiendas"></datalist>
+      <div class="dos">
+        <label class="campo"><span class="etiqueta">Fecha de compra o entrega</span>
+          <input type="date" id="p-fecha" required></label>
+        <label class="campo"><span class="etiqueta">Precio (€)</span>
+          <input type="number" id="p-precio" min="0" step="0.01" inputmode="decimal" placeholder="Opcional"></label>
+      </div>
+      <fieldset class="campo opciones">
+        <legend class="etiqueta">Cómo lo compraste</legend>
+        <label><input type="radio" name="p-tipo" value="nuevo" checked> Nuevo</label>
+        <label><input type="radio" name="p-tipo" value="segunda"> De segunda mano, a una tienda</label>
+        <label><input type="radio" name="p-tipo" value="digital"> App, juego o contenido digital</label>
+      </fieldset>
+      <label class="campo" id="campo-segunda" hidden><span class="etiqueta">Garantía que te dieron por escrito</span>
+        <select id="p-segunda"><option value="3">3 años (lo normal si no te dijeron nada)</option><option value="2">2 años</option><option value="1">1 año</option></select></label>
+      <label class="campo"><span class="etiqueta">Garantía ampliada del fabricante hasta</span>
+        <input type="date" id="p-extra"><small class="ayuda">Déjalo vacío si no tienes.</small></label>
+      <label class="campo"><span class="etiqueta">Notas</span>
+        <input type="text" id="p-notas" maxlength="200" placeholder="Número de serie, color, a quién se lo compraste…"></label>
+      <div class="acciones">
+        <button class="boton" value="guardar" type="submit">Guardar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Detalle -->
+  <dialog id="dlg-detalle" class="hoja">
+    <div id="detalle"></div>
+  </dialog>
+
+  <!-- Carta de reclamación -->
+  <dialog id="dlg-carta" class="hoja">
+    <form method="dialog" class="formulario" id="form-carta">
+      <div class="hoja-cabecera">
+        <h3>Carta de reclamación</h3>
+        <button class="icono" value="cancelar" formnovalidate aria-label="Cerrar"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+      </div>
+      <label class="campo"><span class="etiqueta">Qué le pasa</span>
+        <input type="text" id="c-problema" maxlength="300" placeholder="Ej.: no centrifuga desde hace una semana"></label>
+      <fieldset class="campo opciones">
+        <legend class="etiqueta">Qué pides</legend>
+        <label><input type="radio" name="c-solucion" value="reparacion" checked> Que lo reparen gratis</label>
+        <label><input type="radio" name="c-solucion" value="sustitucion"> Que te lo cambien por uno nuevo</label>
+      </fieldset>
+      <div class="dos">
+        <label class="campo"><span class="etiqueta">Tu nombre</span><input type="text" id="c-nombre" autocomplete="name"></label>
+        <label class="campo"><span class="etiqueta">Tu localidad</span><input type="text" id="c-lugar" autocomplete="address-level2"></label>
+      </div>
+      <label class="campo"><span class="etiqueta">Teléfono o correo para la respuesta</span><input type="text" id="c-contacto"></label>
+      <label class="campo"><span class="etiqueta">La carta (puedes cambiar lo que quieras)</span>
+        <textarea id="c-texto" rows="14"></textarea></label>
+      <div class="acciones">
+        <button class="boton" type="button" id="c-compartir">Enviar o guardar</button>
+        <button class="boton boton-claro" type="button" id="c-copiar">Copiar el texto</button>
+      </div>
+      <p class="nota">Envíala por correo o entrégala en la tienda con una copia del ticket y pide que te sellen una copia. Si no responden, pide la hoja de reclamaciones.</p>
+    </form>
+  </dialog>
+
+  <!-- Renovación -->
+  <dialog id="dlg-renovacion" class="hoja">
+    <form method="dialog" class="formulario" id="form-renovacion">
+      <div class="hoja-cabecera">
+        <h3 id="titulo-renovacion">Nueva renovación</h3>
+        <button class="icono" value="cancelar" formnovalidate aria-label="Cerrar"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+      </div>
+      <label class="campo"><span class="etiqueta">Qué es</span>
+        <input type="text" id="r-nombre" maxlength="60" required placeholder="Ej.: Seguro del coche"></label>
+      <label class="campo"><span class="etiqueta">Tipo</span><select id="r-tipo"></select></label>
+      <div class="dos">
+        <label class="campo"><span class="etiqueta">Próxima renovación</span><input type="date" id="r-fecha" required></label>
+        <label class="campo"><span class="etiqueta">Cada cuánto</span>
+          <select id="r-periodo"><option value="anual">Cada año</option><option value="semestral">Cada 6 meses</option><option value="trimestral">Cada 3 meses</option><option value="mensual">Cada mes</option><option value="unica">Solo una vez</option></select></label>
+      </div>
+      <div class="dos">
+        <label class="campo"><span class="etiqueta">Importe (€)</span><input type="number" id="r-importe" min="0" step="0.01" inputmode="decimal"></label>
+        <label class="campo"><span class="etiqueta">Avisarme antes</span>
+          <select id="r-avisar"><option value="1">1 día</option><option value="3">3 días</option><option value="7">1 semana</option><option value="15">15 días</option><option value="30">1 mes</option><option value="45">45 días</option><option value="60">2 meses</option></select></label>
+      </div>
+      <p class="nota" id="r-consejo"></p>
+      <div class="acciones">
+        <button class="boton" value="guardar" type="submit">Guardar</button>
+        <button class="boton boton-peligro" value="borrar" type="submit" formnovalidate id="r-borrar" hidden>Borrar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="dlg-foto" class="visor"><form method="dialog"><button class="visor-cerrar" aria-label="Cerrar">×</button></form><img id="visor-img" alt="Foto del ticket"></dialog>
+
+  <div class="aviso-flotante" id="toast" role="status" aria-live="polite"></div>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
