@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { calcularGarantia, sumarMeses, duracion, proximaRenovacion, costeAnual, cartaReclamacion, numeroDe } from '../public/garantia.js';
+import { calcularGarantia, sumarMeses, duracion, quedanFrase, proximaRenovacion, costeAnual, cartaReclamacion, numeroDe } from '../public/garantia.js';
 
 test('producto nuevo desde 2022: 3 años y presunción de 2', () => {
   const g = calcularGarantia({ fechaCompra: '2025-03-12', tipo: 'nuevo' }, '2026-11-26');
@@ -51,6 +51,15 @@ test('duración legible', () => {
   assert.equal(duracion('2026-11-26', '2026-12-08'), '12 días');
   assert.equal(duracion('2026-11-26', '2027-11-26'), '1 año');
   assert.equal(duracion('2026-11-26', '2029-02-27'), '2 años y 3 meses');
+});
+
+test('«Queda 1 mes» y «Quedan 3 meses»', () => {
+  assert.equal(quedanFrase('1 mes'), 'Queda 1 mes');
+  assert.equal(quedanFrase('1 día'), 'Queda 1 día');
+  assert.equal(quedanFrase('1 año'), 'Queda 1 año');
+  assert.equal(quedanFrase('12 días'), 'Quedan 12 días');
+  assert.equal(quedanFrase('1 año y 3 meses'), 'Quedan 1 año y 3 meses');
+  assert.equal(quedanFrase('0 días'), 'Quedan 0 días');
 });
 
 test('renovaciones: avanza a la próxima fecha y calcula el coste anual', () => {
