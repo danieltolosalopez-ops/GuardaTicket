@@ -1,0 +1,11 @@
+{
+  "appId": "io.github.danieltolosalopezops.guardaticket",
+  "appName": "Guarda el Ticket",
+  "webDir": "public",
+  "plugins": {
+    "LocalNotifications": {
+      "smallIcon": "ic_stat_aviso",
+      "iconColor": "#2E7D32"
+    }
+  }
+}
