@@ -6,13 +6,18 @@
   "type": "module",
   "scripts": {
     "test": "node --test test/*.test.mjs",
-    "android": "node scripts/android.mjs"
+    "android": "node scripts/android.mjs",
+    "ios": "node scripts/ios.mjs"
   },
-  "engines": { "node": ">=22" },
+  "engines": {
+    "node": ">=22"
+  },
   "dependencies": {
     "@capacitor/android": "^8.0.0",
+    "@capacitor/app": "^8.0.0",
     "@capacitor/core": "^8.0.0",
     "@capacitor/filesystem": "^8.0.0",
+    "@capacitor/ios": "^8.0.0",
     "@capacitor/local-notifications": "^8.0.0",
     "@capacitor/share": "^8.0.0"
   },

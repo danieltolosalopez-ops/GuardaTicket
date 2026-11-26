@@ -3,7 +3,7 @@ import {
   euros, sumarDias, diasEntre, duracion, TIPOS, TIPOS_RENOVACION, AVISO_PRONTO_DIAS,
 } from './garantia.js';
 import * as db from './db.js';
-import { esNativa, permisoAvisos, programarAvisos, compartirArchivo, compartirTexto, registrarSW } from './native.js';
+import { esNativa, permisoAvisos, programarAvisos, compartirArchivo, compartirTexto, registrarSW, alPulsarAtras, cerrarDialogoAbierto } from './native.js';
 
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
@@ -401,11 +401,18 @@ async function pintarMas() {
 }
 
 // ================= Arranque =================
+alPulsarAtras(() => {
+  if (cerrarDialogoAbierto()) return true;
+  if (estado.vista !== 'tickets') { irA('tickets'); return true; }
+  return false;
+});
 async function cargar() {
   [estado.productos, estado.renovaciones] = await Promise.all([db.todos('productos'), db.todos('renovaciones')]);
   pintarTickets();
   if (estado.vista === 'renovaciones') pintarRenovaciones();
 }
+// En la app nativa, si el sistema borró los datos internos (falta de espacio), se recuperan de la copia espejo.
+if (await db.recuperarSiHaceFalta()) toast('Tickets recuperados');
 await cargar();
 reprogramarAvisos();
 registrarSW();

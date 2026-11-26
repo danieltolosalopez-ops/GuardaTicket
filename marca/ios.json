@@ -1,0 +1,7 @@
+{
+  "estiloBarra": "UIStatusBarStyleDarkContent",
+  "permisos": {
+    "NSCameraUsageDescription": "Para hacer fotos de tus tickets y facturas. Las fotos se guardan solo en tu móvil.",
+    "NSPhotoLibraryUsageDescription": "Para elegir la foto de un ticket o factura de tu galería. Las fotos se guardan solo en tu móvil."
+  }
+}
