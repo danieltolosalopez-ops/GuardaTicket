@@ -39,6 +39,9 @@ export function duracion(desde, hasta) {
   return partes.join(' y ');
 }
 
+// "Queda 1 mes" / "Quedan 3 meses" (concordancia del verbo con lo que queda).
+export const quedanFrase = (q) => `${/^1 [^ ]+$/.test(q) ? 'Queda' : 'Quedan'} ${q}`;
+
 export const TIPOS = {
   nuevo: 'Nuevo',
   segunda: 'De segunda mano (comprado a una tienda)',

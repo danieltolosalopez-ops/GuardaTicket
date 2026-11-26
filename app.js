@@ -1,6 +1,6 @@
 import {
   calcularGarantia, cartaReclamacion, proximaRenovacion, costeAnual, numeroDe, hoyISO, fechaLarga, fechaCorta,
-  euros, sumarDias, diasEntre, duracion, TIPOS, TIPOS_RENOVACION, AVISO_PRONTO_DIAS,
+  euros, sumarDias, diasEntre, duracion, quedanFrase, TIPOS, TIPOS_RENOVACION, AVISO_PRONTO_DIAS,
 } from './garantia.js';
 import * as db from './db.js';
 import { esNativa, permisoAvisos, programarAvisos, compartirArchivo, compartirTexto, registrarSW, alPulsarAtras, cerrarDialogoAbierto } from './native.js';
@@ -89,7 +89,7 @@ function pintarTickets() {
       <span class="t-raya"></span>
       <span class="t-linea t-fuerte"><span>Garantía hasta</span><span>${fechaCorta(g.finTotal)}</span></span>
       <span class="barra" aria-hidden="true"><i style="width:${Math.round(g.progreso * 100)}%"></i></span>
-      <span class="t-pie">${g.estado === 'caducada' ? `Terminó hace ${duracion(g.finTotal, hoy())}` : `Quedan ${g.quedan}`}${p.fotos?.length ? '' : '<span class="sin-foto">Falta la foto del ticket</span>'}</span>
+      <span class="t-pie">${g.estado === 'caducada' ? `Terminó hace ${duracion(g.finTotal, hoy())}` : quedanFrase(g.quedan)}${p.fotos?.length ? '' : '<span class="sin-foto">Falta la foto del ticket</span>'}</span>
     </button></li>`).join('');
   ul.querySelectorAll('.ticket[data-id]').forEach((b) => b.addEventListener('click', () => abrirDetalle(b.dataset.id)));
 }
@@ -198,7 +198,7 @@ async function abrirDetalle(id) {
       : '<p class="foto-vacia">Sin foto del ticket. Edita el ticket para añadirla.</p>'}
     <div class="ficha estado-${g.estado}">
       <p class="ficha-estado"><span class="sello">${SELLOS[g.estado]}</span></p>
-      <p class="ficha-fin">Garantía hasta el <b>${fechaLarga(g.finTotal)}</b>${g.quedan ? ` (quedan ${g.quedan})` : ''}.</p>
+      <p class="ficha-fin">Garantía hasta el <b>${fechaLarga(g.finTotal)}</b>${g.quedan ? ` (${quedanFrase(g.quedan).toLowerCase()})` : ''}.</p>
       <ul class="datos">
         <li>Comprado ${p.tienda ? `en <b>${esc(p.tienda)}</b> ` : ''}el ${fechaLarga(p.fechaCompra)}${p.precio != null ? ` por ${esc(euros(p.precio))}` : ''}.</li>
         <li>${esc(TIPOS[p.tipo] || TIPOS.nuevo)}: garantía legal hasta el ${fechaLarga(g.fin)}.${g.extra ? ` Garantía del fabricante hasta el ${fechaLarga(g.extra)}.` : ''}</li>
