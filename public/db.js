@@ -1,3 +1,4 @@
+import { plugin } from './native.js';
 // Almacén local (IndexedDB): productos, fotos y renovaciones. Nada sale del dispositivo.
 // En la app nativa (Android/iPhone) se guarda además una copia espejo en los archivos internos de la app,
 // porque el sistema puede vaciar los datos del navegador interno si el móvil se queda sin espacio.
@@ -6,8 +7,8 @@ const VERSION = 1;
 export const ALMACENES = ['productos', 'fotos', 'renovaciones'];
 let abierta;
 
-const cap = window.Capacitor;
-const FS = cap?.isNativePlatform?.() ? (cap.Plugins?.Filesystem || cap.registerPlugin?.('Filesystem')) : null;
+
+const FS = plugin('Filesystem');
 const DIR = 'DATA';
 const CARPETA = 'guardaticket';
 
