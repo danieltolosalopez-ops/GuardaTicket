@@ -162,21 +162,25 @@ for (const id of ['#foto-camara', '#foto-galeria']) {
 
 dlgP.addEventListener('close', async () => {
   if (dlgP.returnValue !== 'guardar') return;
-  const p = estado.productos.find((x) => x.id === edicion.id) || { id: db.nuevoId(), creado: hoy() };
-  for (const n of edicion.nuevas) await db.poner('fotos', { id: n.id, blob: n.blob });
-  for (const id of edicion.quitadas) await db.borrar('fotos', id);
-  Object.assign(p, {
+  // Se leen el formulario y las fotos ANTES de guardar nada: mientras se guardan las fotos,
+  // el formulario puede volver a abrirse (y vaciarse) para el ticket siguiente.
+  const ed = edicion;
+  const p = estado.productos.find((x) => x.id === ed.id) || { id: db.nuevoId(), creado: hoy() };
+  const datos = {
     nombre: fp.nombre.value.trim(), tienda: fp.tienda.value.trim(), fechaCompra: fp.fecha.value,
     precio: fp.precio.value === '' ? null : Number(fp.precio.value), tipo: tipoElegido(),
     añosSegunda: Number(fp.segunda.value), garantiaExtraHasta: fp.extra.value || null, notas: fp.notas.value.trim(),
-    fotos: [...edicion.fotos, ...edicion.nuevas.map((n) => n.id)], actualizado: hoy(),
-  });
+    fotos: [...ed.fotos, ...ed.nuevas.map((n) => n.id)], actualizado: hoy(),
+  };
+  for (const n of ed.nuevas) await db.poner('fotos', { id: n.id, blob: n.blob });
+  for (const id of ed.quitadas) await db.borrar('fotos', id);
+  Object.assign(p, datos);
   await db.poner('productos', p);
   if (!estado.productos.includes(p)) estado.productos.push(p);
   db.pedirPersistencia();
   pintarTickets();
   await reprogramarAvisos(true);
-  toast(edicion.id ? 'Ticket actualizado' : 'Ticket guardado');
+  toast(ed.id ? 'Ticket actualizado' : 'Ticket guardado');
 });
 $('#form-producto').addEventListener('submit', (e) => {
   if (e.submitter?.value === 'guardar' && (!fp.nombre.value.trim() || !fp.fecha.value)) { e.preventDefault(); fp.nombre.reportValidity(); }
