@@ -148,13 +148,21 @@ async function comprimir(archivo) {
   return new Promise((ok) => c.toBlob((b) => ok(b || archivo), 'image/jpeg', 0.82));
 }
 
+// Las fotos van al ticket en el que se eligieron, aunque mientras se preparan se pulse «Guardar» o se abra otro.
+// Al guardar se espera a que terminen (edicion.preparando) para que no se queden fuera.
 async function añadirFotos(lista) {
-  for (const archivo of lista) {
-    if (!archivo.type.startsWith('image/')) continue;
-    const blob = await comprimir(archivo);
-    edicion.nuevas.push({ id: db.nuevoId(), blob, url: URL.createObjectURL(blob) });
-  }
-  pintarFotosForm();
+  const ed = edicion;
+  const trabajo = (async () => {
+    await ed.preparando;
+    for (const archivo of lista) {
+      if (!archivo.type.startsWith('image/')) continue;
+      const blob = await comprimir(archivo);
+      ed.nuevas.push({ id: db.nuevoId(), blob, url: URL.createObjectURL(blob) });
+    }
+  })();
+  ed.preparando = trabajo.catch(() => {});
+  await trabajo;
+  if (edicion === ed) pintarFotosForm();
 }
 for (const id of ['#foto-camara', '#foto-galeria']) {
   $(id).addEventListener('change', async (e) => { await añadirFotos([...e.target.files]); e.target.value = ''; });
@@ -170,8 +178,10 @@ dlgP.addEventListener('close', async () => {
     nombre: fp.nombre.value.trim(), tienda: fp.tienda.value.trim(), fechaCompra: fp.fecha.value,
     precio: fp.precio.value === '' ? null : Number(fp.precio.value), tipo: tipoElegido(),
     añosSegunda: Number(fp.segunda.value), garantiaExtraHasta: fp.extra.value || null, notas: fp.notas.value.trim(),
-    fotos: [...ed.fotos, ...ed.nuevas.map((n) => n.id)], actualizado: hoy(),
+    actualizado: hoy(),
   };
+  await ed.preparando; // si al pulsar «Guardar» aún se estaba preparando una foto, se espera a que termine
+  datos.fotos = [...ed.fotos, ...ed.nuevas.map((n) => n.id)];
   for (const n of ed.nuevas) await db.poner('fotos', { id: n.id, blob: n.blob });
   for (const id of ed.quitadas) await db.borrar('fotos', id);
   Object.assign(p, datos);

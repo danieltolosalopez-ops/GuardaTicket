@@ -52,4 +52,24 @@ export default async ({ ir, js, clic, escribir, esperar }) => {
     const g = q.result.transaction('productos').objectStore('productos').getAll();
     g.onsuccess = () => r(JSON.stringify(g.result.map((p) => [p.nombre, p.tienda, p.fechaCompra, (p.fotos || []).length]))); }; })`);
   if (!guardados.includes('["Cafetera Krups","MediaMarkt","2026-09-15",1]') || guardados.includes('[""')) throw new Error('El ticket se guardó mal al abrir enseguida otro: ' + guardados);
+  // Se elige una foto y se pulsa «Guardar» mientras aún se está preparando, y se abre enseguida otro ticket:
+  // la foto tiene que quedarse en el primero y no pasar al formulario del siguiente.
+  await clic('#btn-nuevo');
+  await js(`(async () => {
+    const c = document.createElement('canvas'); c.width = 400; c.height = 600; c.getContext('2d').fillRect(0, 0, 10, 10);
+    const blob = await new Promise((r) => c.toBlob(r, 'image/jpeg', .9));
+    document.querySelector('#p-nombre').value = 'Robot Roomba'; document.querySelector('#p-fecha').value = '2026-10-20';
+    const dt = new DataTransfer(); dt.items.add(new File([blob], 't.jpg', { type: 'image/jpeg' }));
+    const inp = document.querySelector('#foto-galeria'); inp.files = dt.files; inp.dispatchEvent(new Event('change'));
+    const d = document.querySelector('#dlg-producto');
+    d.addEventListener('close', () => document.querySelector('#btn-nuevo').click(), { once: true }); d.close('guardar');
+  })()`);
+  await esperar(1200);
+  const fotosEnElSiguiente = await js("document.querySelectorAll('#fotos-form figure').length");
+  await js("document.querySelector('#dlg-producto').close('cancelar')");
+  const tras = await js(`new Promise((r) => { const q = indexedDB.open('guardaticket'); q.onsuccess = () => {
+    const g = q.result.transaction('productos').objectStore('productos').getAll();
+    g.onsuccess = () => r(JSON.stringify(g.result.map((p) => [p.nombre, (p.fotos || []).length]))); }; })`);
+  if (!tras.includes('["Robot Roomba",1]')) throw new Error('Se perdió la foto elegida justo antes de guardar: ' + tras);
+  if (fotosEnElSiguiente) throw new Error('La foto del ticket anterior apareció en el formulario del siguiente');
 };
